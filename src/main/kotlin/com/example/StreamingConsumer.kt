@@ -1,10 +1,11 @@
 package com.example
 
 import com.example.models.Product
+import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import jsonMapper
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.*
-import org.apache.kafka.streams.kstream.KStream
+import org.apache.kafka.streams.kstream.Consumed
 import org.apache.kafka.streams.kstream.KTable
 import org.apache.log4j.LogManager
 import productTopic
@@ -25,14 +26,18 @@ class StreamsProcessor(val brokers: String) {
         val personJsonStream: KTable<String, String> = streamsBuilder
                 .table(productTopic, Consumed.with(Serdes.String(), Serdes.String()))
 
+        val avroSerde = GenericAvroSerde().apply {
+            configure(mapOf(Pair("schema.registry.url", "")), false)
+        }
+
         val personStream: KTable<String, Product> = personJsonStream.mapValues { v ->
             val product = jsonMapper.readValue(v, Product::class.java)
             logger.debug("Person: $product")
             product
         }
 
-        personStream.mapValues {
-            print("VALUE: $it")
+        personStream.mapValues {  _, p ->
+            print("VALUE: $p")
         }
 
         val topology = streamsBuilder.build()

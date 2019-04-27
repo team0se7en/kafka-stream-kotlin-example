@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.2.10'
+    ext.kotlin_version = '1.2.51'
 
     repositories {
         mavenCentral()
@@ -20,14 +20,23 @@ mainClassName = "com.linecorp.lineth.bcrm.StreamingConsumerKt"
 
 repositories {
     mavenCentral()
+    maven { url 'https://packages.confluent.io/maven/' }
 }
 
 dependencies {
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    compile "com.fasterxml.jackson.module:jackson-module-kotlin:2.9.+"
-    compile group: 'org.apache.kafka', name: 'kafka-streams', version: '1.0.1'
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version: '1.7.25'
+
+    // logging
+    compile 'org.slf4j:slf4j-api:1.7.25'
+    compile 'org.slf4j:slf4j-log4j12:1.7.25'
+
+    // JSON serialization
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+    compile 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.6'
+
+    // Kafka
+    compile 'org.apache.kafka:kafka-streams:2.0.0'
+    compile 'io.confluent:kafka-streams-avro-serde:5.0.0'
 }
 
 compileKotlin {
