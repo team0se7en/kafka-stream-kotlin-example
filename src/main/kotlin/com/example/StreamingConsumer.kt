@@ -3,9 +3,11 @@ package com.example
 import com.example.models.Product
 import io.confluent.kafka.streams.serdes.avro.GenericAvroSerde
 import jsonMapper
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.*
 import org.apache.kafka.streams.kstream.Consumed
+import org.apache.kafka.streams.kstream.KStream
 import org.apache.kafka.streams.kstream.KTable
 import org.apache.log4j.LogManager
 import productTopic
@@ -23,16 +25,12 @@ class StreamsProcessor(val brokers: String) {
     fun process() {
         val streamsBuilder = StreamsBuilder()
 
-        val personJsonStream: KTable<String, String> = streamsBuilder
-                .table(productTopic, Consumed.with(Serdes.String(), Serdes.String()))
+        val personJsonStream: KStream<String, String> = streamsBuilder
+                .stream(productTopic, Consumed.with(Serdes.String(), Serdes.String()))
 
-        val avroSerde = GenericAvroSerde().apply {
-            configure(mapOf(Pair("schema.registry.url", "")), false)
-        }
-
-        val personStream: KTable<String, Product> = personJsonStream.mapValues { v ->
+        val personStream: KStream<String, Product> = personJsonStream.mapValues { v ->
             val product = jsonMapper.readValue(v, Product::class.java)
-            logger.debug("Person: $product")
+            logger.debug("Product: $product")
             product
         }
 
@@ -45,7 +43,7 @@ class StreamsProcessor(val brokers: String) {
         val props = Properties()
         props["bootstrap.servers"] = brokers
         props["application.id"] = "rtra"
-
+        props[ConsumerConfig.AUTO_OFFSET_RESET_CONFIG] = "earliest"
         val streams = KafkaStreams(topology, props)
         streams.start()
     }
