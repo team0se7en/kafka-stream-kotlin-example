@@ -1,5 +1,4 @@
-# Project Title
-Kafka streams with kotlin example
+# Kafka streams with kotlin example
 
 ## Getting Started
 
